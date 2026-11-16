@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Para Ana</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💌</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fdf9f7;--ink:#3d3339;--soft:#8a7b82;--blush:#f3dde1;--rose:#b9788a;--rose-d:#9c5f72;--sage:#dfe8e1;--line:#eadfe2;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);min-height:100vh;line-height:1.6;
+ background-image:radial-gradient(60vmax 40vmax at 100% 0,#f7e6ea 0,transparent 60%),radial-gradient(50vmax 40vmax at 0 100%,#e8f0ea 0,transparent 60%);background-attachment:fixed}
+main{max-width:620px;margin:0 auto;padding:40px 22px 80px}
+.screen{animation:in .6s ease both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h1,h2{font-family:var(--serif);font-weight:400;line-height:1.2;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,7vw,2.7rem);margin-bottom:22px}
+h2{font-size:1.7rem;margin-bottom:6px}
+p{margin-bottom:14px}
+.lead{font-family:var(--serif);font-size:1.15rem;line-height:1.75;color:var(--ink)}
+.muted{color:var(--soft);font-size:.95rem}
+.hero{padding-top:9vh}
+.btn{font:500 1rem var(--sans);background:var(--rose);color:#fff;border:0;border-radius:999px;padding:14px 30px;cursor:pointer;transition:background .2s,transform .2s}
+.btn:hover{background:var(--rose-d)}.btn:active{transform:scale(.97)}
+.btn:disabled{background:#d9cbd0;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--soft);padding:14px 18px}
+.btn.ghost:hover{background:transparent;color:var(--ink)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:26px}
+.timer{display:inline-block;background:var(--sage);color:#4e6455;border-radius:999px;padding:7px 16px;font-size:.9rem;margin:10px 0 22px;transition:background .4s}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:14px}
+.card h3{font-family:var(--serif);font-weight:500;font-size:1.15rem;margin-bottom:12px}
+.film{padding:10px 0;border-top:1px solid var(--line)}
+.film:first-of-type{border-top:0;padding-top:0}
+.film b{display:block;font-weight:500;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:400 .95rem var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer;transition:all .2s}
+.chip:hover{border-color:var(--rose)}
+.chip.on{background:var(--blush);border-color:var(--rose);color:var(--rose-d)}
+.chip:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+input[type=text]{width:100%;font:400 1rem var(--sans);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:12px;background:var(--paper);color:var(--ink)}
+.hugs{text-align:center;font-family:var(--serif);font-style:italic;color:var(--rose-d);margin:26px 0 6px;font-size:1.05rem}
+.sub{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.sum li{list-style:none;padding:8px 0;border-top:1px solid var(--line)}
+.sum li:first-child{border-top:0}.sum span{color:var(--soft);display:block;font-size:.85rem}
+.ps{font-family:var(--serif);font-style:italic;color:var(--rose-d);margin-top:30px}
+.veil{position:fixed;inset:0;background:rgba(61,51,57,.35);display:flex;align-items:center;justify-content:center;padding:22px;z-index:9;animation:in .25s ease both}
+.modal{background:var(--paper);border-radius:22px;padding:28px 26px;max-width:380px;width:100%;text-align:center}
+.modal p{font-family:var(--serif);font-size:1.15rem;margin-bottom:20px}
+.modal .row{justify-content:center;margin-top:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="veil" class="veil" hidden><div class="modal"><p id="mtext"></p><div class="row" id="mbtns"></div></div></div>
+
+<script>
+// ====== EDITA AQUÍ SI CAMBIAN HORARIOS ======
+const DAYS = [
+  { d: 'Martes 17 de noviembre',    films: [{ t: 'Wildwood', h: ['8:15 pm'] }, { t: 'Sensatez y sentimiento', h: ['8:00 pm'] }] },
+  { d: 'Miércoles 18 de noviembre', films: [{ t: 'Wildwood', h: ['8:15 pm'] }, { t: 'Sensatez y sentimiento', h: ['8:00 pm'] }] },
+  { d: 'Jueves 19 de noviembre',    films: [{ t: 'Los Juegos del Hambre: Amanecer en la Cosecha', h: ['8:00 pm', '8:50 pm'] }] },
+  { d: 'Viernes 20 de noviembre',   films: [{ t: 'Los Juegos del Hambre: Amanecer en la Cosecha', h: ['8:00 pm', '8:50 pm'] }] }
+];
+const DIAS_LIBRES = ['Martes 17', 'Miércoles 18', 'Jueves 19', 'Viernes 20', 'Otro día (lo platicamos)'];
+const SABORES = ['Mantequilla', 'Caramelo', 'Queso', 'Saladas', 'Mixtas'];
+const CONFIRMA = ['¿Segura? 🤨', '¿Seguuura segura? 🥺', 'Piénsalo un poquito… 💭', 'Mira que Jesús se va a poner triste 🥲', 'Última oportunidad, Ana 👀'];
+// ============================================
+
+const $ = s => document.querySelector(s), app = $('#app');
+let S = { choice: null, extras: new Set(), flavor: '', drink: '', when: new Set(), other: '' }, tick;
+
+const chips = (arr, k, fmt) => arr.map((x, i) => `<button class="chip" data-k="${k}|${i}">${fmt ? fmt(x) : x}</button>`).join('');
+
+function modal(text, btns) {
+  $('#mtext').textContent = text;
+  const box = $('#mbtns'); box.innerHTML = '';
+  btns.forEach(b => { const e = document.createElement('button'); e.className = 'btn' + (b.ghost ? ' ghost' : ''); e.textContent = b.l; e.onclick = () => { $('#veil').hidden = true; b.f && b.f(); }; box.appendChild(e); });
+  $('#veil').hidden = false;
+}
+
+function welcome() {
+  app.innerHTML = `<section class="screen hero">
+    <h1>Hola, Ana.</h1>
+    <p class="lead">Posiblemente pensaste que esto era un intento de phishing, pero tranquila: soy yo, Jesús.</p>
+    <p class="lead">Sé que podría preguntarte directamente, pero… ¿por qué no hacerlo más lindo y, al menos así, sacarte una sonrisa?</p>
+    <div class="row"><button class="btn" id="go">Descubrir</button></div></section>`;
+  $('#go').onclick = plan;
+}
+
+function plan() {
+  S.choice = null;
+  const dias = DAYS.map((d, di) => `<div class="card"><h3>${d.d}</h3>${d.films.map((f, fi) =>
+    `<div class="film"><b>${f.t}</b><div class="chips">${f.h.map((h, hi) => `<button class="chip" data-k="cine|${di}|${fi}|${hi}">${h}</button>`).join('')}</div></div>`).join('')}</div>`).join('');
+  app.innerHTML = `<section class="screen">
+    <h2>Elige tu plan</h2>
+    <div class="timer" id="timer">Tómate tu tiempo, sin presiones · 1:00</div>
+    ${dias}
+    <div class="card"><h3>Otra película que te llame la atención 🙈</h3>
+      <input type="text" id="otra" placeholder="¿Cuál te late? (de terror no, ya lo sé)">
+      <div class="chips">${chips(DIAS_LIBRES, 'otra')}</div></div>
+    <div class="card"><h3>Mejor una cena y platicar</h3>
+      <p class="muted">Sin pantalla de por medio, solo tú, yo y buena plática.</p>
+      <div class="chips">${chips(DIAS_LIBRES, 'cena')}</div></div>
+    <div class="card"><h3>La opción misteriosa ✨</h3>
+      <p class="muted">Nadie sabe qué hay aquí dentro.</p>
+      <div class="chips"><button class="chip" data-k="secreta">Quiero averiguarlo</button></div></div>
+    <p class="hugs">En todas las funciones y planes anteriores está incluida una cantidad ilimitada de abrazos y besos.</p>
+    <div class="row"><button class="btn" id="next" disabled>Continuar</button></div></section>`;
+  let t = 60; clearInterval(tick);
+  tick = setInterval(() => {
+    t--; const el = $('#timer'); if (!el) return clearInterval(tick);
+    if (t > 0) el.textContent = `Tómate tu tiempo, sin presiones · 0:${String(t).padStart(2, '0')}`;
+    else { clearInterval(tick); el.textContent = 'No iba a pasar nada, pero tal vez así te decidías más rápido 😊'; }
+  }, 1000);
+  $('#next').onclick = next;
+}
+
+function next() {
+  const c = S.choice;
+  if (c.type === 'secreta') return confirmChain(0);
+  if (c.type === 'otra') {
+    S.other = $('#otra').value.trim();
+    if (!S.other) return modal('Dime cuál película te late 🙈', [{ l: 'Ok' }]);
+  }
+  clearInterval(tick);
+  c.type === 'cena' ? summary() : extras();
+}
+
+function confirmChain(i) {
+  if (i >= CONFIRMA.length) return modal('Ok… este botón tampoco lo programé 😌 Regresa y elige otra opción, anda.', [{ l: 'Volver', f: plan }]);
+  modal(CONFIRMA[i], [{ l: 'Sí, segura', f: () => confirmChain(i + 1) }, { l: 'Mejor regreso', ghost: true, f: plan }]);
+}
+
+function extras() {
+  const E = ['Café ☕', 'Palomitas 🍿', 'Bebida en específico 🥤', 'Té helado 🧋', 'Helado 🍦', 'Nada'];
+  app.innerHTML = `<section class="screen">
+    <h2>¿Quieres algo para el cine?</h2>
+    <p class="muted">Antes, durante o después de la película. Puedes elegir varias.</p>
+    <div class="card"><div class="chips">${chips(E, 'ex')}</div>
+      <div class="sub" id="fl" hidden><p class="muted">¿De qué sabor las palomitas?</p><div class="chips">${chips(SABORES, 'fl')}</div></div>
+      <div class="sub" id="dr" hidden><p class="muted">¿Qué bebida?</p><input type="text" id="drink" placeholder="Ej. limonada mineral"></div></div>
+    <div class="card"><h3>¿Cuándo?</h3><div class="chips">${chips(['Antes', 'Durante', 'Después'], 'wh')}</div></div>
+    <p class="hugs">Abrazos y besos ilimitados, siempre incluidos.</p>
+    <div class="row"><button class="btn ghost" id="back">Atrás</button><button class="btn" id="next2">Continuar</button></div></section>`;
+  S.extras = new Set(); S.when = new Set(); S.flavor = '';
+  $('#back').onclick = plan;
+  $('#next2').onclick = () => { S.drink = ($('#drink') || {}).value || ''; summary(); };
+}
+
+function lines() {
+  const c = S.choice, L = [];
+  if (c.type === 'cine') { const d = DAYS[c.di], f = d.films[c.fi]; L.push(['Plan', 'Cine'], ['Día', d.d], ['Película', f.t], ['Horario', f.h[c.hi]]); }
+  if (c.type === 'otra') L.push(['Plan', 'Otra película'], ['Película', S.other], ['Día', DIAS_LIBRES[c.i]]);
+  if (c.type === 'cena') L.push(['Plan', 'Cena y plática'], ['Día', DIAS_LIBRES[c.i]]);
+  if (c.type !== 'cena') {
+    const ex = [...S.extras].map(x => x.replace(/ [^\wÁ-ú ]+$/u, ''));
+    const det = ex.map(x => x.startsWith('Palomitas') && S.flavor ? `Palomitas (${S.flavor})` : x.startsWith('Bebida') && S.drink ? `Bebida: ${S.drink}` : x);
+    L.push(['Para el cine', det.length ? det.join(', ') : 'Nada en especial'], ['Cuándo', S.when.size ? [...S.when].join(', ') : 'Sin especificar']);
+  }
+  return L;
+}
+
+function summary() {
+  const L = lines();
+  app.innerHTML = `<section class="screen">
+    <h2>Tu plan</h2><p class="muted">Así quedaría todo. Si algo no te convence, regresa sin problema.</p>
+    <div class="card"><ul class="sum">${L.map(([a, b]) => `<li><span>${a}</span>${b}</li>`).join('')}</ul></div>
+    <p class="hugs">Incluye abrazos y besos ilimitados.</p>
+    <div class="row"><button class="btn ghost" id="back">Atrás</button><button class="btn" id="send">Me agradan estas opciones y quiero ir contigo</button></div>
+    <p class="muted" id="err" style="margin-top:14px"></p></section>`;
+  $('#back').onclick = plan;
+  $('#send').onclick = async () => {
+    const b = $('#send'); b.disabled = true; b.textContent = 'Enviando…';
+    try {
+      const r = await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resumen: L.map(([a, b]) => `${a}: ${b}`).join('\n') }) });
+      if (!r.ok) throw 0;
+      done();
+    } catch (e) { b.disabled = false; b.textContent = 'Me agradan estas opciones y quiero ir contigo'; $('#err').textContent = 'No se pudo enviar. Intenta de nuevo en un momento.'; }
+  };
+}
+
+function done() {
+  app.innerHTML = `<section class="screen hero"><h1>Información enviada 💌</h1>
+    <p class="lead">Quién sabe dónde, pero Jesús ya la sabe.</p>
+    <p class="ps">P.D. Sea la opción que escogieras, me va a encantar.</p></section>`;
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const [k, ...p] = b.dataset.k.split('|'), n = p.map(Number);
+  if (['cine', 'otra', 'cena', 'secreta'].includes(k)) {
+    document.querySelectorAll('.chip[data-k]').forEach(x => { if (/^(cine|otra|cena|secreta)/.test(x.dataset.k)) x.classList.remove('on'); });
+    b.classList.add('on');
+    S.choice = k === 'cine' ? { type: k, di: n[0], fi: n[1], hi: n[2] } : { type: k, i: n[0] };
+    $('#next').disabled = false;
+  } else if (k === 'ex') {
+    const E = ['Café ☕', 'Palomitas 🍿', 'Bebida en específico 🥤', 'Té helado 🧋', 'Helado 🍦', 'Nada'], v = E[n[0]];
+    if (v === 'Nada') return modal('Ana, alguien no programó este botón para poder seleccionarse, así que tendrás que decidir otra cosa 😉', [{ l: 'Ok, ok' }]);
+    b.classList.toggle('on'); S.extras.has(v) ? S.extras.delete(v) : S.extras.add(v);
+    $('#fl').hidden = ![...S.extras].some(x => x.startsWith('Palomitas'));
+    $('#dr').hidden = ![...S.extras].some(x => x.startsWith('Bebida'));
+  } else if (k === 'fl') {
+    document.querySelectorAll('.chip[data-k^="fl"]').forEach(x => x.classList.remove('on')); b.classList.add('on'); S.flavor = SABORES[n[0]];
+  } else if (k === 'wh') {
+    const v = ['Antes', 'Durante', 'Después'][n[0]]; b.classList.toggle('on'); S.when.has(v) ? S.when.delete(v) : S.when.add(v);
+  }
+});
+welcome();
+</script>
+</body>
+</html>
