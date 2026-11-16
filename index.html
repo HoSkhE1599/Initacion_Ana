@@ -12,7 +12,7 @@
 <style>
 :root{--paper:#fdf9f7;--ink:#3d3339;--soft:#8a7b82;--blush:#f3dde1;--rose:#b9788a;--rose-d:#9c5f72;--sage:#dfe8e1;--line:#eadfe2;--serif:'Fraunces',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif}
 *{box-sizing:border-box;margin:0}
- [hidden]{display:none!important}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{font-family:var(--sans);color:var(--ink);background:var(--paper);min-height:100vh;line-height:1.6;
  background-image:radial-gradient(60vmax 40vmax at 100% 0,#f7e6ea 0,transparent 60%),radial-gradient(50vmax 40vmax at 0 100%,#e8f0ea 0,transparent 60%);background-attachment:fixed}
@@ -32,7 +32,7 @@ p{margin-bottom:14px}
 .btn.ghost{background:transparent;color:var(--soft);padding:14px 18px}
 .btn.ghost:hover{background:transparent;color:var(--ink)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:26px}
-.timer{display:inline-block;background:var(--sage);color:#4e6455;border-radius:999px;padding:7px 16px;font-size:.9rem;margin:10px 0 22px;transition:background .4s}
+.timer{display:inline-block;background:var(--sage);color:#4e6455;border-radius:999px;padding:7px 16px;font-size:.9rem;margin:10px 0 22px}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:14px}
 .card h3{font-family:var(--serif);font-weight:500;font-size:1.15rem;margin-bottom:12px}
 .film{padding:10px 0;border-top:1px solid var(--line)}
@@ -45,7 +45,8 @@ p{margin-bottom:14px}
 .chip:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
 input[type=text]{width:100%;font:400 1rem var(--sans);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:12px;background:var(--paper);color:var(--ink)}
 .hugs{text-align:center;font-family:var(--serif);font-style:italic;color:var(--rose-d);margin:26px 0 6px;font-size:1.05rem}
-.sub{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.sub{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.sub input:last-child{margin-bottom:0}
 .sum li{list-style:none;padding:8px 0;border-top:1px solid var(--line)}
 .sum li:first-child{border-top:0}.sum span{color:var(--soft);display:block;font-size:.85rem}
 .ps{font-family:var(--serif);font-style:italic;color:var(--rose-d);margin-top:30px}
@@ -68,20 +69,24 @@ const DAYS = [
   { d: 'Jueves 19 de noviembre',    films: [{ t: 'Los Juegos del Hambre: Amanecer en la Cosecha', h: ['8:00 pm', '8:50 pm'] }] },
   { d: 'Viernes 20 de noviembre',   films: [{ t: 'Los Juegos del Hambre: Amanecer en la Cosecha', h: ['8:00 pm', '8:50 pm'] }] }
 ];
-const DIAS_LIBRES = ['Martes 17', 'Miércoles 18', 'Jueves 19', 'Viernes 20', 'Otro día (lo platicamos)'];
-const SABORES = ['Mantequilla', 'Caramelo', 'Queso', 'Saladas', 'Mixtas'];
+const DIAS_LIBRES = ['Martes 17', 'Miércoles 18', 'Jueves 19', 'Viernes 20', 'Otro día'];
+const SABORES = ['Caramelo', 'Mantequilla', 'Otro'];
+const EXTRAS = [{ l: 'Café', e: '☕' }, { l: 'Palomitas', e: '🍿' }, { l: 'Bebida en específico', e: '🥤' }, { l: 'Té helado', e: '🧋' }, { l: 'Helado', e: '🍦' }, { l: 'Nada', e: '' }];
+const CUANDO = ['Antes', 'Durante', 'Después'];
 const CONFIRMA = ['¿Segura? 🤨', '¿Seguuura segura? 🥺', 'Piénsalo un poquito… 💭', 'Mira que Jesús se va a poner triste 🥲', 'Última oportunidad, Ana 👀'];
 // ============================================
 
 const $ = s => document.querySelector(s), app = $('#app');
-let S = { choice: null, extras: new Set(), flavor: '', drink: '', when: new Set(), other: '' }, tick;
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+let S = { choice: null, other: '', dia: '', hora: '', extras: new Set(), flavors: new Set(), flavorText: '', drink: '', when: new Set() }, tick;
 
-const chips = (arr, k, fmt) => arr.map((x, i) => `<button class="chip" data-k="${k}|${i}">${fmt ? fmt(x) : x}</button>`).join('');
+const chips = (arr, k, cls = '', fmt) => arr.map((x, i) => `<button type="button" class="chip ${cls}" data-k="${k}|${i}">${fmt ? fmt(x) : x}</button>`).join('');
+const ok = () => ({ l: 'Ok' });
 
 function modal(text, btns) {
   $('#mtext').textContent = text;
   const box = $('#mbtns'); box.innerHTML = '';
-  btns.forEach(b => { const e = document.createElement('button'); e.className = 'btn' + (b.ghost ? ' ghost' : ''); e.textContent = b.l; e.onclick = () => { $('#veil').hidden = true; b.f && b.f(); }; box.appendChild(e); });
+  btns.forEach(b => { const e = document.createElement('button'); e.type = 'button'; e.className = 'btn' + (b.ghost ? ' ghost' : ''); e.textContent = b.l; e.onclick = () => { $('#veil').hidden = true; if (b.f) b.f(); }; box.appendChild(e); });
   $('#veil').hidden = false;
 }
 
@@ -90,29 +95,36 @@ function welcome() {
     <h1>Hola, Ana.</h1>
     <p class="lead">Posiblemente pensaste que esto era un intento de phishing, pero tranquila: soy yo, Jesús.</p>
     <p class="lead">Sé que podría preguntarte directamente, pero… ¿por qué no hacerlo más lindo y, al menos así, sacarte una sonrisa?</p>
-    <div class="row"><button class="btn" id="go">Descubrir</button></div></section>`;
+    <div class="row"><button type="button" class="btn" id="go">Descubrir</button></div></section>`;
   $('#go').onclick = plan;
+}
+
+function slot(k, ph) {
+  return `<div class="sub sp" id="sp-${k}" hidden>
+    <input type="text" id="dd-${k}" placeholder="¿Qué día te gustaría?" hidden>
+    <input type="text" id="hh-${k}" placeholder="${ph}"></div>`;
 }
 
 function plan() {
   S.choice = null;
   const dias = DAYS.map((d, di) => `<div class="card"><h3>${d.d}</h3>${d.films.map((f, fi) =>
-    `<div class="film"><b>${f.t}</b><div class="chips">${f.h.map((h, hi) => `<button class="chip" data-k="cine|${di}|${fi}|${hi}">${h}</button>`).join('')}</div></div>`).join('')}</div>`).join('');
+    `<div class="film"><b>${f.t}</b><div class="chips">${f.h.map((h, hi) => `<button type="button" class="chip pk" data-k="cine|${di}|${fi}|${hi}">${h}</button>`).join('')}</div></div>`).join('')}</div>`).join('');
   app.innerHTML = `<section class="screen">
     <h2>Elige tu plan</h2>
     <div class="timer" id="timer">Tómate tu tiempo, sin presiones · 1:00</div>
     ${dias}
     <div class="card"><h3>Otra película que te llame la atención 🙈</h3>
-      <input type="text" id="otra" placeholder="¿Cuál te late? (de terror no, ya lo sé)">
-      <div class="chips">${chips(DIAS_LIBRES, 'otra')}</div></div>
+      <input type="text" id="otra" placeholder="¿Cuál te gustaría?">
+      <div class="chips">${chips(DIAS_LIBRES, 'otra', 'pk')}</div>
+      ${slot('otra', '¿A qué hora? Ej. 8:30 pm')}</div>
     <div class="card"><h3>Mejor una cena y platicar</h3>
       <p class="muted">Sin pantalla de por medio, solo tú, yo y buena plática.</p>
-      <div class="chips">${chips(DIAS_LIBRES, 'cena')}</div></div>
-    <div class="card"><h3>La opción misteriosa ✨</h3>
-      <p class="muted">Nadie sabe qué hay aquí dentro.</p>
-      <div class="chips"><button class="chip" data-k="secreta">Quiero averiguarlo</button></div></div>
+      <div class="chips">${chips(DIAS_LIBRES, 'cena', 'pk')}</div>
+      ${slot('cena', '¿A qué hora te gustaría? Ej. 8:30 pm')}</div>
+    <div class="card"><h3>No quiero ir 🙃</h3>
+      <div class="chips"><button type="button" class="chip pk" data-k="no|0">Elegir esta opción</button></div></div>
     <p class="hugs">En todas las funciones y planes anteriores está incluida una cantidad ilimitada de abrazos y besos.</p>
-    <div class="row"><button class="btn" id="next" disabled>Continuar</button></div></section>`;
+    <div class="row"><button type="button" class="btn" id="next" disabled>Continuar</button></div></section>`;
   let t = 60; clearInterval(tick);
   tick = setInterval(() => {
     t--; const el = $('#timer'); if (!el) return clearInterval(tick);
@@ -122,47 +134,72 @@ function plan() {
   $('#next').onclick = next;
 }
 
+function clearChoice() {
+  document.querySelectorAll('.pk').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.sp').forEach(x => { x.hidden = true; });
+  S.choice = null;
+  const n = $('#next'); if (n) n.disabled = true;
+}
+
 function next() {
-  const c = S.choice;
-  if (c.type === 'secreta') return confirmChain(0);
+  const c = S.choice; if (!c) return;
+  if (c.type === 'no') return confirmChain(0);
   if (c.type === 'otra') {
     S.other = $('#otra').value.trim();
-    if (!S.other) return modal('Dime cuál película te late 🙈', [{ l: 'Ok' }]);
+    if (!S.other) return modal('Dime cuál película te gustaría 🙈', [ok()]);
+  }
+  if (c.type === 'otra' || c.type === 'cena') {
+    const libre = c.i === DIAS_LIBRES.length - 1;
+    S.dia = libre ? $('#dd-' + c.type).value.trim() : '';
+    S.hora = $('#hh-' + c.type).value.trim();
+    if (libre && !S.dia) return modal('Dime qué día te gustaría 📅', [ok()]);
+    if (!S.hora) return modal('Dime a qué hora te gustaría 🕗', [ok()]);
   }
   clearInterval(tick);
   c.type === 'cena' ? summary() : extras();
 }
 
 function confirmChain(i) {
-  if (i >= CONFIRMA.length) return modal('Ok… este botón tampoco lo programé 😌 Regresa y elige otra opción, anda.', [{ l: 'Volver', f: plan }]);
-  modal(CONFIRMA[i], [{ l: 'Sí, segura', f: () => confirmChain(i + 1) }, { l: 'Mejor regreso', ghost: true, f: plan }]);
+  if (i >= CONFIRMA.length) return modal('Ok… este botón tampoco lo programé 😌 Regresa y elige otra opción, anda.', [{ l: 'Volver', f: clearChoice }]);
+  modal(CONFIRMA[i], [{ l: 'Sí, segura', f: () => confirmChain(i + 1) }, { l: 'Mejor regreso', ghost: true, f: clearChoice }]);
 }
 
 function extras() {
-  const E = ['Café ☕', 'Palomitas 🍿', 'Bebida en específico 🥤', 'Té helado 🧋', 'Helado 🍦', 'Nada'];
+  S.extras = new Set(); S.when = new Set(); S.flavors = new Set();
   app.innerHTML = `<section class="screen">
     <h2>¿Quieres algo para el cine?</h2>
     <p class="muted">Antes, durante o después de la película. Puedes elegir varias.</p>
-    <div class="card"><div class="chips">${chips(E, 'ex')}</div>
-      <div class="sub" id="fl" hidden><p class="muted">¿De qué sabor las palomitas?</p><div class="chips">${chips(SABORES, 'fl')}</div></div>
-      <div class="sub" id="dr" hidden><p class="muted">¿Qué bebida?</p><input type="text" id="drink" placeholder="Ej. limonada mineral"></div></div>
-    <div class="card"><h3>¿Cuándo?</h3><div class="chips">${chips(['Antes', 'Durante', 'Después'], 'wh')}</div></div>
+    <div class="card"><div class="chips">${chips(EXTRAS, 'ex', '', x => x.e ? x.l + ' ' + x.e : x.l)}</div>
+      <div class="sub" id="fl" hidden><p class="muted">¿De qué sabor las palomitas? Puedes elegir los dos.</p>
+        <div class="chips">${chips(SABORES, 'fl')}</div>
+        <input type="text" id="flt" hidden placeholder="Cuéntame: ej. mitad caramelo, mitad queso" style="margin-top:12px"></div>
+      <div class="sub" id="dr" hidden><p class="muted">¿Qué bebida te gustaría?</p><input type="text" id="drink" placeholder="Ej. limonada mineral"></div></div>
+    <div class="card"><h3>¿Cuándo?</h3><div class="chips">${chips(CUANDO, 'wh')}</div></div>
     <p class="hugs">Abrazos y besos ilimitados, siempre incluidos.</p>
-    <div class="row"><button class="btn ghost" id="back">Atrás</button><button class="btn" id="next2">Continuar</button></div></section>`;
-  S.extras = new Set(); S.when = new Set(); S.flavor = '';
+    <div class="row"><button type="button" class="btn ghost" id="back">Atrás</button><button type="button" class="btn" id="next2">Continuar</button></div></section>`;
   $('#back').onclick = plan;
-  $('#next2').onclick = () => { S.drink = ($('#drink') || {}).value || ''; summary(); };
+  $('#next2').onclick = () => {
+    const fl = $('#flt').value.trim(), dr = $('#drink').value.trim();
+    if (S.extras.has('Palomitas')) {
+      if (!S.flavors.size) return modal('Dime de qué sabor quieres las palomitas 🍿', [ok()]);
+      if (S.flavors.has('Otro') && !fl) return modal('Cuéntame cómo quieres las palomitas (por ejemplo, mitad y mitad) 🍿', [ok()]);
+    }
+    if (S.extras.has('Bebida en específico') && !dr) return modal('Dime qué bebida te gustaría 🥤', [ok()]);
+    const partes = SABORES.filter(x => x !== 'Otro' && S.flavors.has(x));
+    if (S.flavors.has('Otro')) partes.push('Otro: ' + fl);
+    S.flavorText = partes.join(' + '); S.drink = dr;
+    summary();
+  };
 }
 
 function lines() {
   const c = S.choice, L = [];
   if (c.type === 'cine') { const d = DAYS[c.di], f = d.films[c.fi]; L.push(['Plan', 'Cine'], ['Día', d.d], ['Película', f.t], ['Horario', f.h[c.hi]]); }
-  if (c.type === 'otra') L.push(['Plan', 'Otra película'], ['Película', S.other], ['Día', DIAS_LIBRES[c.i]]);
-  if (c.type === 'cena') L.push(['Plan', 'Cena y plática'], ['Día', DIAS_LIBRES[c.i]]);
+  if (c.type === 'otra') L.push(['Plan', 'Otra película'], ['Película', S.other], ['Día', S.dia || DIAS_LIBRES[c.i]], ['Hora', S.hora]);
+  if (c.type === 'cena') L.push(['Plan', 'Cena y plática'], ['Día', S.dia || DIAS_LIBRES[c.i]], ['Hora', S.hora]);
   if (c.type !== 'cena') {
-    const ex = [...S.extras].map(x => x.replace(/ [^\wÁ-ú ]+$/u, ''));
-    const det = ex.map(x => x.startsWith('Palomitas') && S.flavor ? `Palomitas (${S.flavor})` : x.startsWith('Bebida') && S.drink ? `Bebida: ${S.drink}` : x);
-    L.push(['Para el cine', det.length ? det.join(', ') : 'Nada en especial'], ['Cuándo', S.when.size ? [...S.when].join(', ') : 'Sin especificar']);
+    const det = [...S.extras].map(x => x === 'Palomitas' ? `Palomitas (${S.flavorText})` : x === 'Bebida en específico' ? `Bebida: ${S.drink}` : x);
+    L.push(['Para el cine', det.length ? det.join(', ') : 'Nada en especial'], ['Cuándo', S.when.size ? CUANDO.filter(x => S.when.has(x)).join(', ') : 'Sin especificar']);
   }
   return L;
 }
@@ -171,16 +208,16 @@ function summary() {
   const L = lines();
   app.innerHTML = `<section class="screen">
     <h2>Tu plan</h2><p class="muted">Así quedaría todo. Si algo no te convence, regresa sin problema.</p>
-    <div class="card"><ul class="sum">${L.map(([a, b]) => `<li><span>${a}</span>${b}</li>`).join('')}</ul></div>
+    <div class="card"><ul class="sum">${L.map(([a, b]) => `<li><span>${esc(a)}</span>${esc(b)}</li>`).join('')}</ul></div>
     <p class="hugs">Incluye abrazos y besos ilimitados.</p>
-    <div class="row"><button class="btn ghost" id="back">Atrás</button><button class="btn" id="send">Me agradan estas opciones y quiero ir contigo</button></div>
+    <div class="row"><button type="button" class="btn ghost" id="back">Atrás</button><button type="button" class="btn" id="send">Me agradan estas opciones y quiero ir contigo</button></div>
     <p class="muted" id="err" style="margin-top:14px"></p></section>`;
   $('#back').onclick = plan;
   $('#send').onclick = async () => {
-    const b = $('#send'); b.disabled = true; b.textContent = 'Enviando…';
+    const b = $('#send'); b.disabled = true; b.textContent = 'Enviando…'; $('#err').textContent = '';
     try {
-      const r = await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resumen: L.map(([a, b]) => `${a}: ${b}`).join('\n') }) });
-      if (!r.ok) throw 0;
+      const r = await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resumen: L.map(([a, v]) => `${a}: ${v}`).join('\n') }) });
+      if (!r.ok) throw new Error('send');
       done();
     } catch (e) { b.disabled = false; b.textContent = 'Me agradan estas opciones y quiero ir contigo'; $('#err').textContent = 'No se pudo enviar. Intenta de nuevo en un momento.'; }
   };
@@ -195,21 +232,26 @@ function done() {
 app.addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   const [k, ...p] = b.dataset.k.split('|'), n = p.map(Number);
-  if (['cine', 'otra', 'cena', 'secreta'].includes(k)) {
-    document.querySelectorAll('.chip[data-k]').forEach(x => { if (/^(cine|otra|cena|secreta)/.test(x.dataset.k)) x.classList.remove('on'); });
-    b.classList.add('on');
+  if (b.classList.contains('pk')) {
+    document.querySelectorAll('.pk').forEach(x => x.classList.remove('on')); b.classList.add('on');
+    document.querySelectorAll('.sp').forEach(x => { x.hidden = true; });
     S.choice = k === 'cine' ? { type: k, di: n[0], fi: n[1], hi: n[2] } : { type: k, i: n[0] };
+    if (k === 'otra' || k === 'cena') {
+      $('#sp-' + k).hidden = false;
+      $('#dd-' + k).hidden = n[0] !== DIAS_LIBRES.length - 1;
+    }
     $('#next').disabled = false;
   } else if (k === 'ex') {
-    const E = ['Café ☕', 'Palomitas 🍿', 'Bebida en específico 🥤', 'Té helado 🧋', 'Helado 🍦', 'Nada'], v = E[n[0]];
+    const v = EXTRAS[n[0]].l;
     if (v === 'Nada') return modal('Ana, alguien no programó este botón para poder seleccionarse, así que tendrás que decidir otra cosa 😉', [{ l: 'Ok, ok' }]);
     b.classList.toggle('on'); S.extras.has(v) ? S.extras.delete(v) : S.extras.add(v);
-    $('#fl').hidden = ![...S.extras].some(x => x.startsWith('Palomitas'));
-    $('#dr').hidden = ![...S.extras].some(x => x.startsWith('Bebida'));
+    $('#fl').hidden = !S.extras.has('Palomitas');
+    $('#dr').hidden = !S.extras.has('Bebida en específico');
   } else if (k === 'fl') {
-    document.querySelectorAll('.chip[data-k^="fl"]').forEach(x => x.classList.remove('on')); b.classList.add('on'); S.flavor = SABORES[n[0]];
+    const v = SABORES[n[0]]; b.classList.toggle('on'); S.flavors.has(v) ? S.flavors.delete(v) : S.flavors.add(v);
+    $('#flt').hidden = !S.flavors.has('Otro');
   } else if (k === 'wh') {
-    const v = ['Antes', 'Durante', 'Después'][n[0]]; b.classList.toggle('on'); S.when.has(v) ? S.when.delete(v) : S.when.add(v);
+    const v = CUANDO[n[0]]; b.classList.toggle('on'); S.when.has(v) ? S.when.delete(v) : S.when.add(v);
   }
 });
 welcome();
